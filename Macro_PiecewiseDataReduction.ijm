@@ -5,6 +5,7 @@
 // This macro converts directories of 32 bit reconstructions to 8 bit images stack and scales by a factor of 2
 // This operation is performed in N subvolumes to reduce memory requirements
 
+pathOut = "G:\\S405_Catalyst_Analysis\\S405_recons_8Bit\\"
 
 // List of file names
 // Do not include _0000 or .h5 extension in file name
@@ -38,12 +39,12 @@ imWidth = 2650; // Image Width
 imHeight = 2650; // Image Height
 
 // User brightness and contrast window to figure out optimal pixel scaling for contrast
-pixelMin = -30; 
-pixelMax = 50;
+pixelMin = -2.0; 
+pixelMax = 5.0;
 
 // macro scales by a factor of 2, change to false if you do not want to scale
-scale = true; 
-
+scaleXY = true; 
+scaleZ = false;
 //==================================================================================================
 // NO CHANGES NECESSARY BELOW THIS LINE
 
@@ -59,13 +60,15 @@ for (i=0;i<Nfile;i++)
 	for (j=0;j<NsubVolume;j++)
 	{
 		start = j*dsub+1; print(start);
-		run("Image Sequence...","open=["+pathList[i]+fileNameList[i]+"_0000.tif] starting="+start+" number="+dsub+" sort");
+		run("Image Sequence...","open=["+pathList[i]+fileNameList[i]+"_00000.tif] starting="+start+" number="+dsub+" sort");
 		rename("32Bit");
 		//run("Brightness/Contrast...");
 		setMinAndMax(pixelMin, pixelMax);
 		run("8-bit","stack");
-		if (scale == true){
+		if (scaleXY == true){
 			run("Scale...", "x=.5 y=.5 z= 1.0 width="+imWidth/2+" height="+imHeight/2+" depth="+dsub+" interpolation=Bilinear average process create");
+		} else {
+			run("Duplicate...", "duplicate");
 		}
 		rename("part "+j);
 		partList = partList+" image"+j+1+"=[part "+j+"]";
@@ -74,8 +77,10 @@ for (i=0;i<Nfile;i++)
 	}
 	run("Concatenate...", "  title=[8Bit Stack Complete]"+partList );
 	//run("Concatenate...", "all_open title=[Concatenated Stacks]");
-	if (scale==true){
+	if (scaleZ==true){
 		run("Scale...", "x=1 y=1 z=0.5 width="+imWidth/2+" height="+imHeight/2+" depth="+floor(Nimage/2)+" interpolation=Bilinear average process create");
+	} else {
+		run("Duplicate...", "duplicate");
 	}
 	saveAs("Tiff", pathOut + fileNameList[i] + "_8bit.tif");
 	close();

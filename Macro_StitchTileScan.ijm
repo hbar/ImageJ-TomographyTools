@@ -16,21 +16,21 @@ nStack = 280.0000
 // if the datasets are directories full of images, leave false
 // change to true if datasets are single file tiff stacks 
 singleFile = false;
-if (singleFile==false){ open(fileList[0]); }
-if (singleFile==true){ 	run("Image Sequence...", "open="+fileList[0]+" sort"); }
+if (singleFile==true){ open(fileList[0]); }
+if (singleFile==false){ 	run("Image Sequence...", "open="+fileList[0]+" sort"); }
 rename("SecondImage");
 
 for (i=1; i<fileList.length;i++)
 {
-	if (singleFile==false) { 
+	if (singleFile==true) { 
 		open(fileList[0]);
 	}
-	if (singleFile==true){
+	if (singleFile==false){
 		run("Image Sequence...", "open="+fileList[i]+" sort");
 	}
 	
 	rename("FirstImage");
-	run("Pairwise stitching", "first_image=FirstImage second_image=SecondImage fusion_method=[Linear Blending] fused_image=FusedImage check_peaks=5 x=0.0000 y=0.0000 z=”+nStack+” registration_channel_image_1=[Average all channels] registration_channel_image_2=[Average all channels]");
+	run("Pairwise stitching", "first_image=FirstImage second_image=SecondImage fusion_method=[Linear Blending] fused_image=FusedImage check_peaks=5 x=0.0000 y=0.0000 z="+nStack+" registration_channel_image_1=[Average all channels] registration_channel_image_2=[Average all channels]");
 
 	selectWindow("FirstImage");
 	close();
@@ -44,7 +44,8 @@ for (i=1; i<fileList.length;i++)
 selectWindow("SecondImage");
 
 // extract root file name to insert into output file name
-fileName = fileList[0]; fileName = replace(fileName,".tiff"); fileName = replace(fileName,".tif");
+fileName = fileList[0]; fileName = replace(fileName,".tiff");
+fileName = replace(fileName,".tif");
 
-// safe file
+// save file
 saveAs("Tiff",fileName+"_Stitched.tif");
